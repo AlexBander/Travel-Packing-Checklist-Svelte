@@ -1,10 +1,12 @@
 <script>
-	import Login from './Login.svelte';
+	// import Login from './Login.svelte';
+	import Checklist from "./Checklist.svelte";
 </script>
 
 <main>
 	<h1 class="hero">Travel Packing Checklist</h1>
-	<Login />
+	<Checklist />
+	<!-- <Login /> -->
 </main>
 
 <style>
