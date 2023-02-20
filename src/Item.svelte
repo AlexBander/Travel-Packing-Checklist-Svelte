@@ -1,7 +1,9 @@
 <script>
   import {blurOnKey} from './util';
+  import {createEventDispatcher} from 'svelte';
   export let item;
   let editing = false;
+  const dispatch = createEventDispatcher();
 </script>
 <li>
   <input type="checkbox" bind:checked={item.packed}>
@@ -19,7 +21,7 @@
       {item.name}
     </span>
   {/if}
-  <button class="icon">&#x1F5D1;</button>
+  <button class="icon" on:click={() => dispatch('delete')}>&#x1F5D1;</button>
 </li>
 
 <style>

@@ -1,6 +1,7 @@
 <script>
   import Item from './Item.svelte';
   import {getGuid, blurOnKey, sortOnName} from './util';
+  import {createEventDispatcher} from 'svelte';
 
   export let categories;
   export let category;
@@ -10,6 +11,7 @@
   let itemName = '';
   let items = [];
   let message = '';
+  const dispatch = createEventDispatcher();
 
   $: items = Object.values(category.items);
   $: remaining = items.filter(item => !item.packed).length;
@@ -33,6 +35,11 @@
     itemName = '';
   }
 
+  function deleteItem(item) {
+    delete category.items[item.id];
+    category = category;
+  }
+
   function shouldShow(show, item) {
     return (
       show === 'all' ||
@@ -54,7 +61,9 @@
         <span on:click={() => (editing = true)}>{category.name}</span>
     {/if}
     <span class="status">{status}</span>
-    <button class="icon">&#x1F5D1;</button>
+    <button class="icon" on:click={() => dispatch('delete')}>
+      &#x1F5D1;
+    </button>
   </h3>
   <form on:submit|preventDefault={addItem}>
     <label>
@@ -65,7 +74,7 @@
   </form>
   <ul>
     {#each itemsToShow as item (item.id)}
-      <Item bind:item />
+      <Item bind:item on:delete={() => deleteItem(item)} />
     {:else}
       <div>This category does not contain any items yet.</div>
     {/each}

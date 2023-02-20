@@ -1,15 +1,21 @@
 <script>
   import Category from './Category.svelte';
   import {getGuid, sortOnName} from './util';
+  import {createEventDispatcher} from 'svelte';
 
   let categoryArray = [];
   let categories = {};
   let categoryName;
   let message = '';
   let show = 'all';
+  const dispatch = createEventDispatcher();
 
   $: categoryArray = sortOnName(Object.values(categories));
-
+  $: if (categories) persist();
+  function persist() {
+   localStorage.setItem('travel-packing', JSON.stringify(categories));
+  }
+  
   function addCategory() {
     const duplicate = Object.values(categories).some(
     cat => cat.name === categoryName
@@ -23,6 +29,13 @@
     categories[id] = {id, name: categoryName, items: {}};
     categories = categories;
     categoryName = '';
+    dispatch('persist');
+  }
+
+  function deleteCategory(category) {
+    delete categories[category.id];
+    categories = categories;
+    dispatch('persist');
   }
 
   function clearAllChecks() {
@@ -32,6 +45,14 @@
       }
     }
     categories = categories;
+  }
+
+  restore();
+  function restore() {
+    const text = localStorage.getItem('travel-packing');
+    if (text && text !== '{}') {
+      categories = JSON.parse(text);
+    }
   }
 </script>
 
@@ -43,7 +64,7 @@
         <input bind:value={categoryName}>
       </label>
       <button disabled={!categoryName}>Add Category</button>
-      <button class="logout-btn">
+      <button class="logout-btn" on:click={() => dispatch('logout')}>>
         Log Out
       </button>
     </form>
@@ -72,7 +93,7 @@
   </header>
   <div class="categories">
     {#each categoryArray as category (category.id)}
-      <Category bind:category {categories} {show} />
+      <Category bind:category {categories} {show} on:delete={() => deleteCategory(category)} on:persist={persist}/>
     {/each}
   </div>
 </section>
