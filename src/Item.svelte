@@ -2,6 +2,8 @@
   import {blurOnKey} from './util';
   import {createEventDispatcher} from 'svelte';
   export let item;
+  export let categoryId;
+  export let dnd;
   let editing = false;
   const dispatch = createEventDispatcher();
 </script>
@@ -17,7 +19,7 @@
       type="text" />
       {:else}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <span class="packed-{item.packed}" on:click={() => (editing = true)}>
+    <span draggable="true" on:dragstart={event => dnd.drag(event, categoryId, item.id)} class="packed-{item.packed}" on:click={() => (editing = true)}>
       {item.name}
     </span>
   {/if}

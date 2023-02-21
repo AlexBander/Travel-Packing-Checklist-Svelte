@@ -1,16 +1,20 @@
 <script>
   import Item from './Item.svelte';
+  import Dialog from './Dialog.svelte';
   import {getGuid, blurOnKey, sortOnName} from './util';
   import {createEventDispatcher} from 'svelte';
 
   export let categories;
   export let category;
   export let show;
+  export let dnd;
 
   let editing = false;
   let itemName = '';
   let items = [];
   let message = '';
+  let dialog = null;
+  let hovering = false;
   const dispatch = createEventDispatcher();
 
   $: items = Object.values(category.items);
@@ -25,7 +29,7 @@
     );
     if (duplicate) {
       message = `The item "${itemName}" already exists.`;
-      alert(message);
+      dialog.showModal();
       return;
     }
     const {items} = category;
@@ -49,7 +53,17 @@
   }
 </script>
 
-<section>
+<section class:hover={hovering}
+  on:dragenter={() => (hovering = true)}
+  on:dragleave={event => {
+    const {localName} = event.target;
+    if (localName === 'section') hovering = false;
+  }}
+  on:drop|preventDefault={event => {
+    dnd.drop(event, category.id);
+    hovering = false;
+  }}
+  on:dragover|preventDefault>
   <h3>
     {#if editing}
       <input
@@ -74,11 +88,14 @@
   </form>
   <ul>
     {#each itemsToShow as item (item.id)}
-      <Item bind:item on:delete={() => deleteItem(item)} />
+      <Item categoryId={category.id} bind:item on:delete={() => deleteItem(item)} {dnd}/>
     {:else}
       <div>This category does not contain any items yet.</div>
     {/each}
   </ul>
+  <Dialog title="Category" bind:dialog>
+    <div>{message}</div>
+  </Dialog>
 </section>
 
 <style>
@@ -88,6 +105,9 @@
   }
   button.icon {
     border: none;
+  }
+  .hover {
+  border-color: orange;
   }
   h3 {
     display: flex;
