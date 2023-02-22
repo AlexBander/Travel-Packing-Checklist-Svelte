@@ -2,7 +2,10 @@
   import Item from './Item.svelte';
   import Dialog from './Dialog.svelte';
   import {getGuid, blurOnKey, sortOnName} from './util';
+  import {flip} from 'svelte/animate';
   import {createEventDispatcher} from 'svelte';
+  import {linear} from 'svelte/easing';
+  import {scale} from 'svelte/transition';
 
   export let categories;
   export let category;
@@ -16,6 +19,7 @@
   let dialog = null;
   let hovering = false;
   const dispatch = createEventDispatcher();
+  const options = {duration: 700, easing: linear, times: 2};
 
   $: items = Object.values(category.items);
   $: remaining = items.filter(item => !item.packed).length;
@@ -51,9 +55,25 @@
       (show === 'unpacked' && !item.packed)
     );
   }
+
+  function spin(node, options) {
+    const {easing, times = 1} = options;
+    return {
+      ...options,
+      css(t) {
+      const eased = easing(t);
+      const degrees = 360 * times;
+      return 'transform-origin: 50% 50%; ' +
+      `transform: scale(${eased}) ` +
+      `rotate(${eased * degrees}deg);`;
+      }
+    };
+  }
 </script>
 
 <section class:hover={hovering}
+  out:spin={options}
+  in:scale={options}
   on:dragenter={() => (hovering = true)}
   on:dragleave={event => {
     const {localName} = event.target;
@@ -82,13 +102,15 @@
   <form on:submit|preventDefault={addItem}>
     <label>
       New Item
-      <input bind:value={itemName}>
+      <input data-testid="item-input" required bind:value={itemName}>
     </label>
     <button disabled={!itemName}>Add Item</button>
   </form>
   <ul>
     {#each itemsToShow as item (item.id)}
+    <div animate:flip>
       <Item categoryId={category.id} bind:item on:delete={() => deleteItem(item)} {dnd}/>
+    </div>
     {:else}
       <div>This category does not contain any items yet.</div>
     {/each}

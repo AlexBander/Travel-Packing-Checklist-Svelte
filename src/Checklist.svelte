@@ -3,6 +3,7 @@
   import Dialog from './Dialog.svelte';
   import {getGuid, sortOnName} from './util';
   import {createEventDispatcher} from 'svelte';
+  import {flip} from 'svelte/animate';
 
   let categoryArray = [];
   let categories = {};
@@ -26,6 +27,8 @@
     }
 };
   const dispatch = createEventDispatcher();
+  const options = {duration: 700};
+  
 
   $: categoryArray = sortOnName(Object.values(categories));
   $: if (categories) persist();
@@ -115,7 +118,9 @@
   </header>
   <div class="categories">
     {#each categoryArray as category (category.id)}
+    <div class="wrapper" animate:flip={options}>
       <Category dnd={dragAndDrop} bind:category {categories} {show} on:delete={() => deleteCategory(category)} on:persist={persist}/>
+    </div>
     {/each}
   </div>
   <Dialog title="Checklist" bind:dialog>
@@ -129,6 +134,7 @@
     flex-wrap: wrap;
     justify-content: center;
   }
+
   .clear {
     margin-left: 30px;
   }
